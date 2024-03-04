@@ -28,6 +28,4 @@ public:
 private:
 	
 	static TMap<UClass*, FString> TypeToPrefixMap; 
-
-	void FixRedirectors();
 };

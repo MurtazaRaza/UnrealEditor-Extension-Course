@@ -2,11 +2,17 @@
 
 #include "SuperManager.h"
 
+#include "ContentBrowserModule.h"
+#include "CustomBrowserExtension.h"
+#include "CustomLogger.h"
+#include "EditorAssetLibrary.h"
+
 #define LOCTEXT_NAMESPACE "FSuperManagerModule"
 
 void FSuperManagerModule::StartupModule()
 {
-	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
+	CustomBrowserExtensionPtr = MakeShared<FCustomBrowserExtension>();
+	CustomBrowserExtensionPtr->InitContentBrowserExtension();
 }
 
 void FSuperManagerModule::ShutdownModule()
