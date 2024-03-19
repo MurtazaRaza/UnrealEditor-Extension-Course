@@ -5,6 +5,8 @@ class FCustomBrowserExtension
 
 public:
 	void InitContentBrowserExtension();
+	void InitCustomEditorFunctionality();
+
 private:
 	TArray<FString> SelectedFolders;
 	
@@ -12,4 +14,8 @@ private:
 	void AddContentBrowserExtensionOptions(class FMenuBuilder& MenuBuilder);
 	void OnDeleteUnusedAssetButtonClicked();
 	void OnDeleteEmptyFoldersClicked();
+	void OnAdvanceDeletionClicked();
+
+	TSharedRef<SDockTab> OnCreateAdvanceDeletionTab(const FSpawnTabArgs& SpawnTabArgs);
+	TArray<TSharedPtr<struct FAssetData>> GetAllAssetsUnderSelectedFolder();
 };

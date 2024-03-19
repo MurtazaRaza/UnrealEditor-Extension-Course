@@ -9,6 +9,7 @@
 #include "ObjectTools.h"
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "AssetRegistry/IAssetRegistry.h"
+#include "SlateWidgets/SlateAdvanceDeletionWidget.h"
 
 void FCustomBrowserExtension::InitContentBrowserExtension()
 {
@@ -18,6 +19,15 @@ void FCustomBrowserExtension::InitContentBrowserExtension()
 	
 	PathViewContextMenuExtenders.Add(FContentBrowserMenuExtender_SelectedPaths::CreateRaw(this, &FCustomBrowserExtension::CustomContentBrowserExtender));
 	
+}
+
+void FCustomBrowserExtension::InitCustomEditorFunctionality()
+{
+	FTabSpawnerEntry& TabSpawnerEntry = FGlobalTabmanager::Get()->RegisterNomadTabSpawner(
+		FName("AdvanceDeletion"),
+		FOnSpawnTab::CreateRaw(this, &FCustomBrowserExtension::OnCreateAdvanceDeletionTab));
+
+	TabSpawnerEntry.SetDisplayName(FText::FromString(TEXT("Advance Deletion")));
 }
 
 TSharedRef<FExtender> FCustomBrowserExtension::CustomContentBrowserExtender(const TArray<FString>& SelectedPaths)
@@ -51,8 +61,15 @@ void FCustomBrowserExtension::AddContentBrowserExtensionOptions(FMenuBuilder& Me
 	MenuBuilder.AddMenuEntry(
 		FText::FromString(TEXT("Delete Empty Folders")),
 		FText::FromString(TEXT("Deletes all empty folders selected recursively")),
-		FSlateIcon(), FExecuteAction::CreateRaw(this, &FCustomBrowserExtension::OnDeleteEmptyFoldersClicked)
-		
+		FSlateIcon(),
+		FExecuteAction::CreateRaw(this, &FCustomBrowserExtension::OnDeleteEmptyFoldersClicked)
+	);
+
+	MenuBuilder.AddMenuEntry(
+		FText::FromString(TEXT("Advance Deletion")),
+		FText::FromString(TEXT("Displays all assets in selected folder with some additional functionalities")),
+		FSlateIcon(),
+		FExecuteAction::CreateRaw(this, &FCustomBrowserExtension::OnAdvanceDeletionClicked)
 	);
 }
 
@@ -176,3 +193,49 @@ void FCustomBrowserExtension::OnDeleteEmptyFoldersClicked()
 		CustomLogger::ShowMessageDialog(EAppMsgType::Ok, TEXT("No empty folders found under selected folder"), false);
 	}
 }
+
+TSharedRef<SDockTab> FCustomBrowserExtension::OnCreateAdvanceDeletionTab(const FSpawnTabArgs& SpawnTabArgs)
+{
+	auto DockTab = SNew(SDockTab).TabRole(ETabRole::NomadTab)
+	[
+		SNew(SAdvanceDeletionTab)
+		.AssetsDataToStore(GetAllAssetsUnderSelectedFolder())
+	];
+
+	return DockTab;
+}
+
+void FCustomBrowserExtension::OnAdvanceDeletionClicked()
+{
+	FGlobalTabmanager::Get()->TryInvokeTab(FName("AdvanceDeletion"));
+}
+
+TArray<TSharedPtr<FAssetData>> FCustomBrowserExtension::GetAllAssetsUnderSelectedFolder()
+{
+	TArray<TSharedPtr<FAssetData>> SelectedAssets;
+
+	if(SelectedFolders.Num() == 0 )
+	{
+		CustomLogger::ShowMessageDialog(EAppMsgType::Ok, TEXT("No folder selected"), true);
+		return SelectedAssets;
+	}
+
+	TArray<FString> SelectedAssetPaths = UEditorAssetLibrary::ListAssets(SelectedFolders[0]);
+
+	for (const FString& PathName : SelectedAssetPaths)
+	{
+		if(PathName.Contains(TEXT("Developers")) || PathName.Contains(TEXT("Collections")) || PathName.StartsWith(TEXT("__")))
+			continue;
+
+		if(!UEditorAssetLibrary::DoesAssetExist(PathName))
+			continue;
+
+		const FAssetData& AssetData = UEditorAssetLibrary::FindAssetData(PathName);
+
+		SelectedAssets.Add(MakeShared<FAssetData>(AssetData));
+			
+	}
+
+	return SelectedAssets;
+}
+

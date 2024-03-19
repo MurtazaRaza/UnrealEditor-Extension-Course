@@ -13,6 +13,7 @@ void FSuperManagerModule::StartupModule()
 {
 	CustomBrowserExtensionPtr = MakeShared<FCustomBrowserExtension>();
 	CustomBrowserExtensionPtr->InitContentBrowserExtension();
+	CustomBrowserExtensionPtr->InitCustomEditorFunctionality();
 }
 
 void FSuperManagerModule::ShutdownModule()
