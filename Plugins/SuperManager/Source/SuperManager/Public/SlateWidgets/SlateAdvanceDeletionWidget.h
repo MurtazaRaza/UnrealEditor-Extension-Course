@@ -20,6 +20,7 @@ public:
 
 private:
 	TArray<TSharedPtr<struct FAssetData>> SelectedAssetList;
+	TSharedPtr<class FAssetThumbnailPool> ThumbnailPool;
 
 	TSharedRef<ITableRow> OnListItemGenerated(TSharedPtr<struct FAssetData> AssetData, const TSharedRef<STableViewBase>& TableViewBase);
 	TSharedRef<SCheckBox> ConstructCheckbox(const TSharedPtr<struct FAssetData>& AssetData);

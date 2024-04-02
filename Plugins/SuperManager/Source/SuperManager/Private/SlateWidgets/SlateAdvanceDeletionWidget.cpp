@@ -9,6 +9,8 @@ FSlateFontInfo SAdvanceDeletionTab::GetEmbossedTextFont()
 
 void SAdvanceDeletionTab::Construct(const FArguments& Arguments)
 {
+	ThumbnailPool = MakeShareable(new FAssetThumbnailPool(24, false));
+	
 	bCanSupportFocus = true;
 
 	SelectedAssetList = Arguments._AssetsDataToStore;
@@ -75,6 +77,8 @@ TSharedRef<ITableRow> SAdvanceDeletionTab::OnListItemGenerated(TSharedPtr<FAsset
 
 	FSlateFontInfo AssetNameFont = GetEmbossedTextFont();
 	AssetNameFont.Size = 8;
+
+	TSharedPtr<FAssetThumbnail> Thumbnail = MakeShared<FAssetThumbnail>(AssetData.ToSharedRef().Get(), 64, 64, ThumbnailPool);
 	
 	TSharedRef<STableRow<TSharedPtr<FAssetData>>> RowElement =
 		SNew(STableRow<TSharedPtr<FAssetData>>, TableViewBase)
@@ -110,10 +114,16 @@ TSharedRef<ITableRow> SAdvanceDeletionTab::OnListItemGenerated(TSharedPtr<FAsset
 			// Image screenshot
 			+SHorizontalBox::Slot()
 			.HAlign(HAlign_Right)
-			.FillWidth(1.f)
+			.FillWidth(.5f)
 			[
-				SNew(SImage)
-				.Image(AssetData->thu)
+				SNew(SBox)
+				.MaxDesiredHeight(64.f)
+				.MaxDesiredWidth(64.f)
+				.HAlign(HAlign_Right)
+				[
+				   Thumbnail.Get()->MakeThumbnailWidget()
+				]
+				// Thumbnail.Get()->MakeThumbnailWidget()
 			]
 
 			// Button
